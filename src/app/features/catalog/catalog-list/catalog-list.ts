@@ -6,6 +6,7 @@ import { CatalogApiService } from '../../../core/services/catalog-api.service';
 import { CartService } from '../../../core/services/cart.service';
 import { Category, Grade, ListingCard, ListingSearchParams, SpringPage } from '../../../core/models/catalog.models';
 import { gradeLabel } from '../../../core/utils/labels';
+import { environment } from '../../../../environments/environment';
 
 const EMPTY_PAGE: SpringPage<ListingCard> = {
   content: [],
@@ -57,7 +58,7 @@ export class CatalogList implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('No se pudo cargar el catálogo. ¿Está el BFF corriendo en http://localhost:4000?');
+        this.error.set(`No se pudo cargar el catálogo. ¿Está el BFF corriendo en ${environment.bffBaseUrl}?`);
         this.loading.set(false);
       },
     });

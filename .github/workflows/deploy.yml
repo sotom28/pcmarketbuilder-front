@@ -1,0 +1,49 @@
+name: Publicar frontend en S3 (aws)
+
+on:
+  push:
+    branches:
+      - aws
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: pcbuildermakerFront
+
+    steps:
+      - name: Descargar codigo del repo
+        uses: actions/checkout@v4
+
+      - name: Configurar Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Instalar dependencias y compilar (produccion)
+        run: |
+          npm ci
+          npm run build -- --configuration production
+
+      - name: Configurar credenciales de aws
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # Los archivos con hash en el nombre (JS/CSS de outputHashing) pueden
+      # cachearse por mucho tiempo; index.html no, porque es el que referencia
+      # esos hashes y debe revalidarse en cada visita.
+      - name: Subir assets con hash a S3 (cache largo)
+        run: |
+          aws s3 sync dist/pc_builderfront/browser s3://${{ secrets.AWS_S3_BUCKET_NAME }} \
+            --delete \
+            --cache-control "public,max-age=31536000,immutable" \
+            --exclude "index.html"
+
+      - name: Subir index.html a S3 (sin cache)
+        run: |
+          aws s3 cp dist/pc_builderfront/browser/index.html s3://${{ secrets.AWS_S3_BUCKET_NAME }}/index.html \
+            --cache-control "no-cache,no-store,must-revalidate"

@@ -8,15 +8,19 @@ import {
 import { MsalGuardConfiguration, MsalInterceptorConfiguration } from '@azure/msal-angular';
 import { environment } from '../../../environments/environment';
 
-const { clientId, tenantId, redirectUri, postLogoutRedirectUri } = environment.msal;
+const { clientId, tenantId } = environment.msal;
 
 export function MSALInstanceFactory(): IPublicClientApplication {
   return new PublicClientApplication({
     auth: {
       clientId,
       authority: `https://login.microsoftonline.com/${tenantId}`,
-      redirectUri,
-      postLogoutRedirectUri,
+      // Se calcula en runtime (en vez de fijarlo en environment.*.ts) para que el
+      // mismo build funcione en localhost y detrás de CloudFront sin volver a
+      // compilar; el redirect URI resultante debe estar dado de alta como SPA
+      // redirect URI en el App Registration de Entra ID.
+      redirectUri: window.location.origin,
+      postLogoutRedirectUri: window.location.origin,
     },
     cache: {
       cacheLocation: BrowserCacheLocation.LocalStorage,
