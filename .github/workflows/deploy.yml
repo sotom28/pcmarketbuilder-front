@@ -1,15 +1,23 @@
-name: Publicar frontend en S3 (aws)
+name: Publicar frontend en GitHub Pages
 
 on:
   push:
     branches:
       - aws
+      - main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-    environment: pcbuildermakerFront
-
     steps:
       - name: Descargar codigo del repo
         uses: actions/checkout@v4
@@ -20,30 +28,36 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Instalar dependencias y compilar (produccion)
-        run: |
-          npm ci
-          npm run build -- --configuration production
+      - name: Instalar dependencias
+        run: npm ci
 
-      - name: Configurar credenciales de aws
-        uses: aws-actions/configure-aws-credentials@v4
+      # --base-href: GitHub Pages sirve el sitio de un repo bajo /<nombre-repo>/,
+      # no en la raiz del dominio, asi que todas las rutas de assets del index.html
+      # tienen que quedar prefijadas con eso.
+      - name: Compilar (produccion, base-href de GitHub Pages)
+        run: npm run build -- --configuration production --base-href "/${{ github.event.repository.name }}/"
+
+      # GitHub Pages sirve un 404.html si lo hay; copiamos index.html como 404.html
+      # para que cualquier ruta desconocida caiga en la app (con hash-routing esto
+      # es solo un respaldo extra, la navegacion normal ya funciona con #/).
+      - name: Preparar 404.html de respaldo
+        run: cp dist/pc_builderfront/browser/index.html dist/pc_builderfront/browser/404.html
+
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Subir artefacto de Pages
+        uses: actions/upload-pages-artifact@v3
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          path: dist/pc_builderfront/browser
 
-      # Los archivos con hash en el nombre (JS/CSS de outputHashing) pueden
-      # cachearse por mucho tiempo; index.html no, porque es el que referencia
-      # esos hashes y debe revalidarse en cada visita.
-      - name: Subir assets con hash a S3 (cache largo)
-        run: |
-          aws s3 sync dist/pc_builderfront/browser s3://${{ secrets.AWS_S3_BUCKET_NAME }} \
-            --delete \
-            --cache-control "public,max-age=31536000,immutable" \
-            --exclude "index.html"
-
-      - name: Subir index.html a S3 (sin cache)
-        run: |
-          aws s3 cp dist/pc_builderfront/browser/index.html s3://${{ secrets.AWS_S3_BUCKET_NAME }}/index.html \
-            --cache-control "no-cache,no-store,must-revalidate"
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Desplegar a GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

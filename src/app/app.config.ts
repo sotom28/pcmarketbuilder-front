@@ -1,6 +1,6 @@
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptors, withInterceptorsFromDi } from '@angular/common/http';
 import { ApplicationConfig, inject, provideAppInitializer, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withHashLocation } from '@angular/router';
 import {
   MSAL_GUARD_CONFIG,
   MSAL_INSTANCE,
@@ -19,7 +19,11 @@ import { identityHeadersInterceptor } from './core/interceptors/identity-headers
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes),
+    // withHashLocation: GitHub Pages no puede reescribir rutas del lado del
+    // servidor, así que /listings/123 pasaría a dar 404 al recargar. Con hash
+    // (/#/listings/123) todo el ruteo queda del lado del cliente sin necesidad
+    // de configurar el servidor.
+    provideRouter(routes, withHashLocation()),
     provideHttpClient(withInterceptors([identityHeadersInterceptor]), withInterceptorsFromDi()),
     { provide: HTTP_INTERCEPTORS, useClass: MsalInterceptor, multi: true },
     { provide: MSAL_INSTANCE, useFactory: MSALInstanceFactory },

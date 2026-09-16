@@ -15,12 +15,16 @@ export function MSALInstanceFactory(): IPublicClientApplication {
     auth: {
       clientId,
       authority: `https://login.microsoftonline.com/${tenantId}`,
-      // Se calcula en runtime (en vez de fijarlo en environment.*.ts) para que el
-      // mismo build funcione en localhost y detrás de CloudFront sin volver a
-      // compilar; el redirect URI resultante debe estar dado de alta como SPA
-      // redirect URI en el App Registration de Entra ID.
-      redirectUri: window.location.origin,
-      postLogoutRedirectUri: window.location.origin,
+      // document.baseURI (no window.location.origin) porque en GitHub Pages la
+      // app vive en una subruta (https://usuario.github.io/repo/), no en la raíz
+      // del dominio; el <base href> lo fija Angular en build con --base-href.
+      // El resultado hay que darlo de alta como SPA redirect URI en Entra ID.
+      redirectUri: document.baseURI,
+      postLogoutRedirectUri: document.baseURI,
+      // 'query' en vez del default 'fragment': con hash-routing (withHashLocation,
+      // necesario en GitHub Pages) la respuesta de login en el fragmento (#code=...)
+      // chocaría con las rutas de Angular (#/listings/123).
+      OIDCOptions: { responseMode: 'query' },
     },
     cache: {
       cacheLocation: BrowserCacheLocation.LocalStorage,
