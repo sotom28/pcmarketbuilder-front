@@ -1,6 +1,7 @@
 export const environment = {
   production: false,
   bffBaseUrl: 'http://localhost:4000/api',
+  apiGatewayUrl: 'https://teoxgxmoji.execute-api.us-east-1.amazonaws.com/aws',
   msal: {
     // Azure Entra ID (Azure AD) App Registration — plataforma "Single-page application".
     // Reemplazar con los valores reales del tenant. Ver README para los pasos de alta.
