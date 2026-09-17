@@ -92,6 +92,20 @@
   color: var(--text-muted);
 }
 
+.rating-stars {
+  display: flex;
+  gap: 2px;
+  font-size: 0.95rem;
+}
+
+.rating-stars i {
+  color: #f59e0b;
+}
+
+.rating-stars i.empty {
+  color: var(--border-color);
+}
+
 /* --- EDITAR PERFIL --- */
 .edit-card {
   background-color: var(--bg-card);

@@ -32,7 +32,12 @@
       <span class="user"><i class="fa-solid fa-circle-user"></i> {{ auth.displayName }}</span>
       <button type="button" class="btn btn-primary" (click)="logout()">Cerrar sesión</button>
     } @else {
+      <button type="button" class="btn btn-outline" (click)="register()">Registrarse</button>
       <button type="button" class="btn btn-primary" (click)="login()">Iniciar sesión</button>
     }
   </div>
 </header>
+
+@if (showTerms()) {
+  <app-terms-modal (accepted)="onTermsAccepted()" (cancelled)="onTermsCancelled()" />
+}

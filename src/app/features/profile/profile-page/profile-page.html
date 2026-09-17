@@ -30,7 +30,11 @@
             <span class="stat-label">Publicaciones hechas</span>
           </div>
           <div class="stat-item">
-            <span class="stat-value">—</span>
+            <span class="stat-value rating-stars">
+              @for (i of [1, 2, 3, 4, 5]; track i) {
+                <i class="fa-solid fa-star" [class.empty]="i > placeholderRating"></i>
+              }
+            </span>
             <span class="stat-label">Calificación (próximamente)</span>
           </div>
         </div>

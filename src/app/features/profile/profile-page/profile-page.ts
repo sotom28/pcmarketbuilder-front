@@ -29,6 +29,9 @@ export class ProfilePage implements OnInit {
   readonly gradeLabel = gradeLabel;
   readonly memberSince = memberSince;
 
+  // Solo visual por ahora: ms-user todavía no expone un rating real de vendedor.
+  readonly placeholderRating = 4;
+
   form: UpdateProfileRequest = {};
 
   constructor(private readonly userApi: UserApiService) {}
