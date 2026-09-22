@@ -29,7 +29,18 @@
           <td><a [routerLink]="['/listings', listing.publicationId]">{{ listing.title }}</a></td>
           <td>{{ listing.seller?.username ?? 'Desconocido' }}</td>
           <td>{{ listing.price | number: '1.0-0' }}</td>
-          <td><span class="status" [attr.data-status]="listing.status">{{ listing.status }}</span></td>
+          <td>
+            <select
+              class="status-select"
+              [attr.data-status]="listing.status"
+              [disabled]="updatingId() === listing.publicationId"
+              (change)="changeStatus(listing, $any($event.target).value)"
+            >
+              @for (status of statuses; track status) {
+                <option [value]="status" [selected]="status === listing.status">{{ status }}</option>
+              }
+            </select>
+          </td>
           <td>{{ listing.createdAt | date: 'short' }}</td>
           <td>
             <button

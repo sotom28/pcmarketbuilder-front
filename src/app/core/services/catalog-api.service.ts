@@ -2,7 +2,15 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Category, ListingDetail, ListingSearchParams, ListingCard, SpringPage } from '../models/catalog.models';
+import {
+  Category,
+  ListingDetail,
+  ListingSearchParams,
+  ListingCard,
+  Publication,
+  PublicationStatus,
+  SpringPage,
+} from '../models/catalog.models';
 
 @Injectable({ providedIn: 'root' })
 export class CatalogApiService {
@@ -31,5 +39,10 @@ export class CatalogApiService {
   /** Solo WORKSHOP_ADMIN: el backend rechaza con 403 a cualquier otro rol. */
   deleteListing(publicationId: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/listings/${publicationId}`);
+  }
+
+  /** Solo WORKSHOP_ADMIN: mueve el ciclo de vida de la publicación (ACTIVE/RESERVED/SOLD/IN_INSPECTION/WITHDRAWN). */
+  updateListingStatus(publicationId: string, status: PublicationStatus): Observable<Publication> {
+    return this.http.patch<Publication>(`${this.baseUrl}/listings/${publicationId}/status`, { status });
   }
 }

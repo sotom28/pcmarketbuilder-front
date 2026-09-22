@@ -14,10 +14,13 @@ const ALL_STATUSES: PublicationStatus[] = ['ACTIVE', 'RESERVED', 'SOLD', 'IN_INS
   styleUrl: './admin-publications.css',
 })
 export class AdminPublications implements OnInit {
+  readonly statuses = ALL_STATUSES;
+
   readonly listings = signal<ListingCard[]>([]);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly deletingId = signal<string | null>(null);
+  readonly updatingId = signal<string | null>(null);
 
   constructor(private readonly catalogApi: CatalogApiService) {}
 
@@ -40,6 +43,24 @@ export class AdminPublications implements OnInit {
       error: () => {
         this.error.set('No se pudieron cargar las publicaciones.');
         this.loading.set(false);
+      },
+    });
+  }
+
+  changeStatus(listing: ListingCard, status: PublicationStatus): void {
+    if (status === listing.status) return;
+
+    this.updatingId.set(listing.publicationId);
+    this.catalogApi.updateListingStatus(listing.publicationId, status).subscribe({
+      next: () => {
+        this.listings.set(
+          this.listings().map((l) => (l.publicationId === listing.publicationId ? { ...l, status } : l)),
+        );
+        this.updatingId.set(null);
+      },
+      error: () => {
+        this.error.set(`No se pudo actualizar el estado de "${listing.title}".`);
+        this.updatingId.set(null);
       },
     });
   }

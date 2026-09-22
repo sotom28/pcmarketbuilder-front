@@ -45,27 +45,45 @@
   text-decoration: underline;
 }
 
-.status {
+.status-select {
   display: inline-block;
-  padding: 0.15rem 0.5rem;
+  padding: 0.15rem 1.5rem 0.15rem 0.5rem;
   border-radius: 999px;
+  border: 1px solid transparent;
   font-size: 0.75rem;
-  background: #f3f4f6;
+  font-weight: 500;
+  background-color: #f3f4f6;
   color: #444;
+  cursor: pointer;
 }
 
-.status[data-status='ACTIVE'] {
-  background: #dcfce7;
+.status-select:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.status-select[data-status='ACTIVE'] {
+  background-color: #dcfce7;
   color: #15803d;
 }
 
-.status[data-status='SOLD'] {
-  background: #e0e7ff;
+.status-select[data-status='RESERVED'] {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.status-select[data-status='SOLD'] {
+  background-color: #e0e7ff;
   color: #4338ca;
 }
 
-.status[data-status='WITHDRAWN'] {
-  background: #fee2e2;
+.status-select[data-status='IN_INSPECTION'] {
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+
+.status-select[data-status='WITHDRAWN'] {
+  background-color: #fee2e2;
   color: #b91c1c;
 }
 
