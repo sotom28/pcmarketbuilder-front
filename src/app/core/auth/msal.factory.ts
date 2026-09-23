@@ -5,10 +5,10 @@ import {
   PublicClientApplication,
   BrowserCacheLocation,
 } from '@azure/msal-browser';
-import { MsalGuardConfiguration, MsalInterceptorConfiguration } from '@azure/msal-angular';
+import { MsalGuardConfiguration, MsalInterceptorConfiguration, ProtectedResourceScopes } from '@azure/msal-angular';
 import { environment } from '../../../environments/environment';
 
-const { clientId, tenantId } = environment.msal;
+const { clientId, tenantId, apiScope } = environment.msal;
 
 export function MSALInstanceFactory(): IPublicClientApplication {
   return new PublicClientApplication({
@@ -51,20 +51,28 @@ export function MSALGuardConfigFactory(): MsalGuardConfiguration {
   return {
     interactionType: InteractionType.Redirect,
     authRequest: {
-      scopes: ['openid', 'profile', 'email'],
+      // apiScope acá para que el consentimiento se pida en el mismo login.
+      scopes: ['openid', 'profile', 'email', apiScope],
     },
   };
 }
 
 // Solo los endpoints que requieren identidad quedan "protegidos": MsalInterceptor
-// intentará adquirir el token (y forzará login interactivo si hace falta) nada
-// más que para estas rutas. El catálogo público (categorías, listings) no debe
-// disparar un login. Mientras el BFF no valide JWT (ver ms-user/SecurityConfig.java),
-// esto deja el puente listo para cuando el API Gateway empiece a exigir el Bearer token.
+// adjunta el Bearer (access token de apiScope) nada más que a estas rutas, y el
+// BFF lo valida contra el JWKS de Entra (ver bff-pcmarketbuilder/src/auth/verifyToken.ts).
+// Las lecturas del catálogo (GET /listings, /categories) siguen siendo públicas
+// y no deben disparar un login, por eso /listings se protege por método HTTP.
 export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
-  const protectedResourceMap = new Map<string, Array<string> | null>();
-  protectedResourceMap.set(`${environment.bffBaseUrl}/users/me`, ['openid', 'profile', 'email']);
-  protectedResourceMap.set(`${environment.bffBaseUrl}/users/sync`, ['openid', 'profile', 'email']);
+  const writes: ProtectedResourceScopes[] = ['POST', 'PUT', 'PATCH', 'DELETE'].map((httpMethod) => ({
+    httpMethod,
+    scopes: [apiScope],
+  }));
+
+  const protectedResourceMap = new Map<string, Array<string | ProtectedResourceScopes> | null>();
+  protectedResourceMap.set(`${environment.bffBaseUrl}/users/me`, [apiScope]);
+  protectedResourceMap.set(`${environment.bffBaseUrl}/users/sync`, [apiScope]);
+  protectedResourceMap.set(`${environment.bffBaseUrl}/listings`, writes);
+  protectedResourceMap.set(`${environment.bffBaseUrl}/listings/*`, writes);
 
   return {
     interactionType: InteractionType.Redirect,
