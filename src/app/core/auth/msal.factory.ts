@@ -74,6 +74,12 @@ export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
   protectedResourceMap.set(`${environment.bffBaseUrl}/listings`, writes);
   protectedResourceMap.set(`${environment.bffBaseUrl}/listings/*`, writes);
 
+  // Compras, revisión técnica, informes y envíos: siempre con Bearer (todos los métodos).
+  for (const path of ['orders', 'inspections', 'reports', 'shipping/addresses', 'shipping/shipments']) {
+    protectedResourceMap.set(`${environment.bffBaseUrl}/${path}`, [apiScope]);
+    protectedResourceMap.set(`${environment.bffBaseUrl}/${path}/*`, [apiScope]);
+  }
+
   return {
     interactionType: InteractionType.Redirect,
     protectedResourceMap,

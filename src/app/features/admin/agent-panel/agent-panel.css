@@ -1,0 +1,115 @@
+:host {
+  display: block;
+  padding: 24px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+button {
+  border: 1px solid #d1d5db;
+  background: #fff;
+  border-radius: 6px;
+  padding: 0.35rem 0.9rem;
+  cursor: pointer;
+}
+
+button.primary,
+.header button {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.tabs button.active {
+  background: #111827;
+  color: #fff;
+  border-color: #111827;
+}
+
+.error {
+  color: #b91c1c;
+}
+
+.listings {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.listings th,
+.listings td {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.listings tr.overdue td {
+  background: #fef2f2;
+}
+
+.review {
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.review h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.review label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.review input,
+.review select,
+.review textarea {
+  padding: 0.4rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+}
+
+.check {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.check input:first-child {
+  flex: 1;
+}
+
+.check input:nth-child(3) {
+  flex: 2;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}

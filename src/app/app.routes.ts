@@ -27,6 +27,16 @@ export const routes: Routes = [
     loadComponent: () => import('./features/sell/create-listing/create-listing').then((m) => m.CreateListing),
   },
   {
+    path: 'orders',
+    canActivate: [MsalGuard],
+    loadComponent: () => import('./features/orders/orders-page/orders-page').then((m) => m.OrdersPage),
+  },
+  {
+    path: 'admin/agent',
+    canActivate: [MsalGuard, adminGuard],
+    loadComponent: () => import('./features/admin/agent-panel/agent-panel').then((m) => m.AgentPanel),
+  },
+  {
     path: 'admin/publications',
     canActivate: [MsalGuard, adminGuard],
     loadComponent: () =>

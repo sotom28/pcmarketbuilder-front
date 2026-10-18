@@ -8,8 +8,12 @@
     <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Catálogo</a>
     @if (auth.isAuthenticated) {
       <a routerLink="/profile" routerLinkActive="active">Mi perfil</a>
+      <a routerLink="/orders" routerLinkActive="active">Mis pedidos</a>
     }
     @if (auth.isAdmin) {
+      <a routerLink="/admin/agent" routerLinkActive="active" class="admin-link">
+        <i class="fa-solid fa-clipboard-check"></i> Inspecciones
+      </a>
       <a routerLink="/admin/publications" routerLinkActive="active" class="admin-link">
         <i class="fa-solid fa-shield-halved"></i> Admin
       </a>

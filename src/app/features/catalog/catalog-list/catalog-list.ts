@@ -74,6 +74,7 @@ export class CatalogList implements OnInit {
     event.stopPropagation();
     this.cart.add({
       publicationId: listing.publicationId,
+      sellerId: listing.sellerId,
       title: listing.title,
       price: listing.price,
       primaryImage: listing.primaryImage,

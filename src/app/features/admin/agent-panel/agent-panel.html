@@ -1,0 +1,112 @@
+<div class="header">
+  <h1>Agente técnico</h1>
+  <button type="button" (click)="load()" [disabled]="loading()">Recargar</button>
+</div>
+
+<div class="tabs">
+  <button type="button" [class.active]="tab() === 'open'" (click)="select('open')">Por revisar</button>
+  <button type="button" [class.active]="tab() === 'shipments'" (click)="select('shipments')">Envíos</button>
+</div>
+
+@if (error()) {
+  <p class="error">{{ error() }}</p>
+}
+@if (info()) {
+  <p class="info">{{ info() }}</p>
+}
+
+@if (reviewing(); as r) {
+  <form class="review" (ngSubmit)="complete()">
+    <h2>Informe técnico · {{ r.listing?.title || r.description }}</h2>
+
+    @if (r.listing; as l) {
+      <div class="piece">
+        @if (l.images.length) {
+          <div class="photos">
+            @for (img of l.images; track img.imageUrl) {
+              <img [src]="img.imageUrl" [alt]="l.title" height="110" />
+            }
+          </div>
+        }
+        <p>{{ l.description }}</p>
+        <p>Grado {{ l.grade }} · {{ l.usageTimeMonths }} meses de uso · comprador: {{ r.buyerEmail }}</p>
+      </div>
+    }
+
+    <label>Mantenimiento realizado
+      <textarea name="maintenanceDone" [(ngModel)]="maintenanceDone" maxlength="1000" rows="3" required
+        placeholder="Ej.: limpieza, cambio de pasta térmica, pruebas de estrés"></textarea>
+    </label>
+    <label>Fecha del mantenimiento
+      <input name="maintenanceDate" type="date" [(ngModel)]="maintenanceDate" />
+    </label>
+    <label>Resultado
+      <select name="verdict" [(ngModel)]="verdict">
+        <option value="PASSED">Aprobada (se envía)</option>
+        <option value="FAILED">Rechazada (no se envía)</option>
+      </select>
+    </label>
+    <label>Notas (opcional)
+      <textarea name="notes" [(ngModel)]="notes" maxlength="1000" rows="2"></textarea>
+    </label>
+
+    <div class="actions">
+      <button type="button" (click)="reviewing.set(null)">Cancelar</button>
+      <button type="submit" class="primary" [disabled]="busyId() === r.id || !maintenanceDone.trim()">
+        Generar informe
+      </button>
+    </div>
+  </form>
+} @else if (loading()) {
+  <p>Cargando...</p>
+} @else if (tab() === 'shipments') {
+  @if (shipments().length === 0) {
+    <p>No hay envíos.</p>
+  } @else {
+    <table class="listings">
+      <thead>
+        <tr><th>Código</th><th>Destino</th><th>Estado</th><th>Cambiar a</th></tr>
+      </thead>
+      <tbody>
+        @for (s of shipments(); track s.id) {
+          <tr>
+            <td>{{ s.trackingCode }}</td>
+            <td>{{ s.destination.comuna }}, {{ s.destination.region }}</td>
+            <td>{{ s.status }}</td>
+            <td>
+              @if (nextStatuses(s).length) {
+                <select
+                  [disabled]="busyId() === '' + s.id"
+                  (change)="changeShipmentStatus(s, $any($event.target).value)"
+                >
+                  <option value="">—</option>
+                  @for (n of nextStatuses(s); track n) {
+                    <option [value]="n">{{ n }}</option>
+                  }
+                </select>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+} @else if (inspections().length === 0) {
+  <p>No hay inspecciones pendientes.</p>
+} @else {
+  <table class="listings">
+    <thead>
+      <tr><th>Pieza</th><th>Comprador</th><th>Compra</th><th></th></tr>
+    </thead>
+    <tbody>
+      @for (i of inspections(); track i.id) {
+        <tr>
+          <td>{{ i.listing?.title || i.description }}</td>
+          <td>{{ i.buyerEmail }}</td>
+          <td>{{ i.createdAt | date: 'short' }}</td>
+          <td><button type="button" (click)="startReview(i)">Revisar</button></td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}

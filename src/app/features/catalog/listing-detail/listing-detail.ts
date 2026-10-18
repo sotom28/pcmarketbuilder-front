@@ -60,6 +60,7 @@ export class ListingDetailPage implements OnInit {
     if (!item) return;
     this.cart.add({
       publicationId: item.publicationId,
+      sellerId: item.sellerId,
       title: item.title,
       price: item.price,
       primaryImage: item.images.find((i) => i.isPrimary)?.imageUrl ?? item.images[0]?.imageUrl ?? null,

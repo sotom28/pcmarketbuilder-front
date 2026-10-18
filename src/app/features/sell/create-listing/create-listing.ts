@@ -2,7 +2,8 @@ import { DecimalPipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import { CatalogApiService } from '../../../core/services/catalog-api.service';
 import { ProductApiService } from '../../../core/services/product-api.service';
 import { PublicationApiService } from '../../../core/services/publication-api.service';
@@ -11,7 +12,7 @@ import { gradeLabel } from '../../../core/utils/labels';
 
 @Component({
   selector: 'app-create-listing',
-  imports: [FormsModule, DecimalPipe],
+  imports: [FormsModule, DecimalPipe, RouterLink],
   templateUrl: './create-listing.html',
   styleUrl: './create-listing.css',
 })
@@ -23,6 +24,13 @@ export class CreateListing implements OnInit {
   readonly selectedProduct = signal<Product | null>(null);
   readonly submitting = signal(false);
   readonly error = signal<string | null>(null);
+  readonly photos = signal<File[]>([]);
+  readonly previews = signal<string[]>([]);
+  readonly createdId = signal<string | null>(null);
+
+  private readonly allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+  private readonly maxPhotoBytes = 5 * 1024 * 1024;
+  private readonly maxPhotos = 6;
 
   readonly grades: Grade[] = ['GRADE_A', 'GRADE_B', 'GRADE_C'];
   readonly gradeLabel = gradeLabel;
@@ -73,6 +81,44 @@ export class CreateListing implements OnInit {
     }
   }
 
+  onFilesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files ?? []);
+    const invalid = files.find((f) => !this.allowedTypes.includes(f.type) || f.size > this.maxPhotoBytes);
+    if (invalid) {
+      this.error.set(`"${invalid.name}" no es válida: usa JPG, PNG o WebP de hasta 5 MB.`);
+      input.value = '';
+      return;
+    }
+    if (files.length > this.maxPhotos) {
+      this.error.set(`Puedes subir hasta ${this.maxPhotos} fotos.`);
+      input.value = '';
+      return;
+    }
+    this.error.set(null);
+    this.photos.set(files);
+    this.previews.set(files.map((f) => URL.createObjectURL(f)));
+  }
+
+  /** Sube las fotos en orden (la primera queda como principal) y luego abre la publicación. */
+  private async uploadPhotos(publicationId: string): Promise<void> {
+    try {
+      const files = this.photos();
+      for (let i = 0; i < files.length; i++) {
+        await firstValueFrom(this.publicationApi.uploadImage(publicationId, files[i], i === 0));
+      }
+      this.router.navigate(['/listings', publicationId]);
+    } catch (err) {
+      console.error('Error al subir las fotos', err);
+      const e = err as HttpErrorResponse;
+      const detail = typeof e.error?.message === 'string' ? ` (${e.error.message})` : '';
+      this.error.set(`La publicación se creó, pero las fotos no se pudieron subir${detail}.`);
+      this.createdId.set(publicationId);
+    } finally {
+      this.submitting.set(false);
+    }
+  }
+
   submit(): void {
     const product = this.selectedProduct();
     if (!product) {
@@ -91,10 +137,7 @@ export class CreateListing implements OnInit {
         usageTimeMonths: this.form.usageTimeMonths || undefined,
       })
       .subscribe({
-        next: (publication) => {
-          this.submitting.set(false);
-          this.router.navigate(['/listings', publication.publicationId]);
-        },
+        next: (publication) => this.uploadPhotos(publication.publicationId),
         error: (err: HttpErrorResponse) => {
           console.error('Error al crear la publicación', err);
           const upstreamMessage = typeof err.error?.message === 'string' ? err.error.message : null;

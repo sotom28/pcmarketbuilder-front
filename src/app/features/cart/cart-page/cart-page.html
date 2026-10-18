@@ -1,7 +1,17 @@
 <div class="cart-page">
   <h1>Mi carrito</h1>
 
-  @if (cart.count() === 0) {
+  @if (paidOrder(); as order) {
+    <div class="paid">
+      <h2><i class="fa-solid fa-circle-check"></i> ¡Compra realizada!</h2>
+      <p>
+        Un técnico del taller revisará {{ order.items.length === 1 ? 'la pieza' : 'las piezas' }} antes de enviarla.
+        Te avisaremos y te enviaremos el informe técnico en PDF a <strong>{{ order.buyerEmail }}</strong>.
+      </p>
+      <p>Total: <strong>{{ order.totalAmount | number: '1.0-0' }} CLP</strong></p>
+      <a class="btn btn-primary" routerLink="/orders">Ver mis pedidos</a>
+    </div>
+  } @else if (cart.count() === 0) {
     <p class="empty">Tu carrito está vacío. <a routerLink="/">Ver catálogo</a>.</p>
   } @else {
     <ul class="cart-list">
@@ -28,9 +38,29 @@
 
     <div class="summary">
       <span class="total">Total: {{ cart.total() | number: '1.0-0' }} CLP</span>
-      <button type="button" class="btn checkout" disabled title="El checkout todavía no está disponible">
-        Finalizar compra (próximamente)
-      </button>
+      @if (!auth.isAuthenticated) {
+        <span class="hint">Inicia sesión para comprar</span>
+      } @else {
+        <button type="button" class="btn btn-primary" [disabled]="!emailValid() || buying()" (click)="buy()">
+          {{ buying() ? 'Procesando...' : 'Comprar' }}
+        </button>
+      }
     </div>
+
+    @if (auth.isAuthenticated) {
+      <div class="card-form">
+        <label>Ingresa un correo al que quieras recibir la información
+          <input name="buyerEmail" type="email" autocomplete="email" [ngModel]="email()" (ngModelChange)="email.set($event)" required />
+        </label>
+        <p class="note">Te enviaremos la confirmación y el informe técnico a este correo.</p>
+        @if (email() && !emailValid()) {
+          <p class="error">Escribe un correo válido.</p>
+        }
+        @if (error()) {
+          <p class="error">{{ error() }}</p>
+        }
+        <p class="note">Pago simulado: no se pide tarjeta.</p>
+      </div>
+    }
   }
 </div>

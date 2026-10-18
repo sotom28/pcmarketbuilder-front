@@ -1,0 +1,102 @@
+:host {
+  display: block;
+  padding: 24px;
+}
+
+.orders-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.orders-page h1 {
+  font-size: 1.3rem;
+  margin: 0 0 1.25rem;
+}
+
+.empty {
+  color: var(--text-muted);
+}
+
+.error {
+  color: var(--danger);
+}
+
+.order {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.order header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.date {
+  margin-left: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.items {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.items li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.items li > span:first-child {
+  flex: 1;
+}
+
+.shipment {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.9rem;
+}
+
+.badge {
+  padding: 0.1rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  background-color: #f3f4f6;
+  color: #444;
+}
+
+.badge[data-status='HOLD_ESCROW'],
+.badge[data-status='IN_REVIEW'],
+.badge[data-status='IN_TRANSIT'],
+.badge[data-status='PROCESSING'] {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.badge[data-status='RELEASED_TO_SELLER'],
+.badge[data-status='PASSED'],
+.badge[data-status='DELIVERED'] {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.badge[data-status='REFUNDED'],
+.badge[data-status='FAILED'],
+.badge[data-status='CANCELLED'],
+.badge[data-status='RETURNED'] {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
