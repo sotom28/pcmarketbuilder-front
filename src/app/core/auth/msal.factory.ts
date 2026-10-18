@@ -8,7 +8,7 @@ import {
 import { MsalGuardConfiguration, MsalInterceptorConfiguration, ProtectedResourceScopes } from '@azure/msal-angular';
 import { environment } from '../../../environments/environment';
 
-const { clientId, tenantId, apiScope } = environment.msal;
+const { clientId, tenantId, redirectUri, postLogoutRedirectUri } = environment.msal;
 
 /**
  * Scope de la API propia del BFF. Es lo que hace que el token salga con
@@ -30,16 +30,8 @@ export function MSALInstanceFactory(): IPublicClientApplication {
     auth: {
       clientId,
       authority: `https://login.microsoftonline.com/${tenantId}`,
-      // document.baseURI (no window.location.origin) porque en GitHub Pages la
-      // app vive en una subruta (https://usuario.github.io/repo/), no en la raíz
-      // del dominio; el <base href> lo fija Angular en build con --base-href.
-      // El resultado hay que darlo de alta como SPA redirect URI en Entra ID.
-      redirectUri: document.baseURI,
-      postLogoutRedirectUri: document.baseURI,
-      // 'query' en vez del default 'fragment': con hash-routing (withHashLocation,
-      // necesario en GitHub Pages) la respuesta de login en el fragmento (#code=...)
-      // chocaría con las rutas de Angular (#/listings/123).
-      OIDCOptions: { responseMode: 'query' },
+      redirectUri,
+      postLogoutRedirectUri,
     },
     cache: {
       cacheLocation: BrowserCacheLocation.LocalStorage,

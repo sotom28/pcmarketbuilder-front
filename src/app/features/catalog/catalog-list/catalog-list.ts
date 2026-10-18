@@ -7,7 +7,6 @@ import { CartService } from '../../../core/services/cart.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Category, Grade, ListingCard, ListingSearchParams, SpringPage } from '../../../core/models/catalog.models';
 import { gradeLabel } from '../../../core/utils/labels';
-import { environment } from '../../../../environments/environment';
 
 const EMPTY_PAGE: SpringPage<ListingCard> = {
   content: [],
@@ -82,7 +81,6 @@ export class CatalogList implements OnInit {
     event.stopPropagation();
     this.cart.add({
       publicationId: listing.publicationId,
-      sellerId: listing.sellerId,
       title: listing.title,
       price: listing.price,
       primaryImage: listing.primaryImage,

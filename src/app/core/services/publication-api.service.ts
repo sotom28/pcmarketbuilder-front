@@ -13,7 +13,6 @@ import {
 export class PublicationApiService {
   private readonly baseUrl = environment.bffBaseUrl;
 
-  
   constructor(private readonly http: HttpClient) {}
 
   createListing(body: CreateListingRequest): Observable<Publication> {

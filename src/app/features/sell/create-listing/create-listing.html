@@ -10,9 +10,6 @@
     @if (error()) {
       <p class="form-error">{{ error() }}</p>
     }
-    @if (createdId(); as id) {
-      <p><a [routerLink]="['/listings', id]">Ver la publicación creada</a></p>
-    }
 
     <div class="builder-form">
 

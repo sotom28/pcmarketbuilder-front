@@ -33,7 +33,7 @@ const MAX_FILE_SIZE_MB = 5;
 
 @Component({
   selector: 'app-create-listing',
-  imports: [FormsModule, DecimalPipe, RouterLink],
+  imports: [FormsModule, DecimalPipe],
   templateUrl: './create-listing.html',
   styleUrl: './create-listing.css',
 })

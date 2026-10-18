@@ -10,12 +10,8 @@
       <a routerLink="/orders" routerLinkActive="active">Mis compras</a>
       <a routerLink="/sales" routerLinkActive="active">Mis ventas</a>
       <a routerLink="/profile" routerLinkActive="active">Mi perfil</a>
-      <a routerLink="/orders" routerLinkActive="active">Mis pedidos</a>
     }
     @if (auth.isAdmin) {
-      <a routerLink="/admin/agent" routerLinkActive="active" class="admin-link">
-        <i class="fa-solid fa-clipboard-check"></i> Inspecciones
-      </a>
       <a routerLink="/admin/publications" routerLinkActive="active" class="admin-link">
         <i class="fa-solid fa-shield-halved"></i> Admin
       </a>
@@ -58,7 +54,3 @@
     }
   </div>
 </header>
-
-@if (showTerms()) {
-  <app-terms-modal (accepted)="onTermsAccepted()" (cancelled)="onTermsCancelled()" />
-}
