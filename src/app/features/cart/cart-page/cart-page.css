@@ -45,7 +45,7 @@
 .thumb {
   width: 80px;
   aspect-ratio: 4 / 3;
-  background-color: #f1f5f9;
+  background-color: var(--c-f1f5f9);
   border-radius: 6px;
   overflow: hidden;
   display: flex;
@@ -88,8 +88,8 @@
 }
 
 .remove:hover {
-  background-color: #fee2e2;
-  border-color: #fca5a5;
+  background-color: var(--c-fee2e2);
+  border-color: var(--c-fca5a5);
   color: var(--danger);
 }
 
@@ -108,61 +108,48 @@
   font-weight: 700;
 }
 
-.hint {
-  color: var(--text-muted);
+.notify {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.notify label {
+  font-weight: 600;
   font-size: 0.9rem;
 }
 
-.card-form,
-.paid {
+.notify input {
   max-width: 420px;
-  margin: 1.5rem 0 0 auto;
-  padding: 1rem;
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.paid {
-  margin: 0 auto;
-  max-width: 560px;
-}
-
-.card-form h2,
-.paid h2 {
-  margin: 0;
-  font-size: 1.1rem;
-}
-
-.card-form label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  font-size: 0.85rem;
-  flex: 1;
-}
-
-.card-form input {
-  padding: 0.5rem;
+  padding: 9px 12px;
   border: 1px solid var(--border-color);
   border-radius: 6px;
+  font: inherit;
+  background-color: var(--bg-card);
 }
 
-.card-form .row {
-  display: flex;
-  gap: 0.75rem;
+.notify input:focus {
+  outline: 2px solid var(--accent-light);
+  border-color: var(--accent);
 }
 
-.error {
-  color: var(--danger);
+.notify input.invalid {
+  border-color: var(--c-fca5a5);
+  background-color: var(--c-fef2f2);
+}
+
+.hint {
   margin: 0;
-}
-
-.note {
-  margin: 0;
-  font-size: 0.75rem;
+  font-size: 0.82rem;
   color: var(--text-muted);
+}
+
+.hint-error {
+  color: var(--danger);
+}
+
+.form-error {
+  margin-top: 1rem;
+  margin-bottom: 0;
 }

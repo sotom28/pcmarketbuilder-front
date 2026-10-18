@@ -10,6 +10,21 @@ import { environment } from '../../../environments/environment';
 
 const { clientId, tenantId, apiScope } = environment.msal;
 
+/**
+ * Scope de la API propia del BFF. Es lo que hace que el token salga con
+ * `aud = api://<clientId>`; con scopes OIDC (openid/profile/email) el token
+ * viene para Microsoft y el BFF lo rechaza al validar.
+ */
+export const bffScope = `api://${clientId}/access_as_user`;
+
+/**
+ * Pedido de login interactivo. Incluye el scope del BFF para que el token ya salga con `aud = api://<clientId>`
+ * (con solo openid/profile el primer llamado protegido disparaba un segundo redirect para pedir ese scope).
+ */
+export const loginRequest = {
+  scopes: [bffScope, 'openid', 'profile', 'email'],
+};
+
 export function MSALInstanceFactory(): IPublicClientApplication {
   return new PublicClientApplication({
     auth: {
@@ -50,34 +65,33 @@ export function MSALInstanceFactory(): IPublicClientApplication {
 export function MSALGuardConfigFactory(): MsalGuardConfiguration {
   return {
     interactionType: InteractionType.Redirect,
-    authRequest: {
-      // apiScope acá para que el consentimiento se pida en el mismo login.
-      scopes: ['openid', 'profile', 'email', apiScope],
-    },
+    authRequest: loginRequest,
   };
 }
 
 // Solo los endpoints que requieren identidad quedan "protegidos": MsalInterceptor
-// adjunta el Bearer (access token de apiScope) nada más que a estas rutas, y el
-// BFF lo valida contra el JWKS de Entra (ver bff-pcmarketbuilder/src/auth/verifyToken.ts).
-// Las lecturas del catálogo (GET /listings, /categories) siguen siendo públicas
-// y no deben disparar un login, por eso /listings se protege por método HTTP.
+// intentará adquirir el token (y forzará login interactivo si hace falta) nada
+// más que para estas rutas. El catálogo público (categorías, listings) no debe
+// disparar un login.
 export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
-  const writes: ProtectedResourceScopes[] = ['POST', 'PUT', 'PATCH', 'DELETE'].map((httpMethod) => ({
-    httpMethod,
-    scopes: [apiScope],
-  }));
-
   const protectedResourceMap = new Map<string, Array<string | ProtectedResourceScopes> | null>();
-  protectedResourceMap.set(`${environment.bffBaseUrl}/users/me`, [apiScope]);
-  protectedResourceMap.set(`${environment.bffBaseUrl}/users/sync`, [apiScope]);
-  protectedResourceMap.set(`${environment.bffBaseUrl}/listings`, writes);
-  protectedResourceMap.set(`${environment.bffBaseUrl}/listings/*`, writes);
+  protectedResourceMap.set(`${environment.bffBaseUrl}/users/me`, [bffScope]);
+  protectedResourceMap.set(`${environment.bffBaseUrl}/users/sync`, [bffScope]);
 
-  // Compras, revisión técnica, informes y envíos: siempre con Bearer (todos los métodos).
-  for (const path of ['orders', 'inspections', 'reports', 'shipping/addresses', 'shipping/shipments']) {
-    protectedResourceMap.set(`${environment.bffBaseUrl}/${path}`, [apiScope]);
-    protectedResourceMap.set(`${environment.bffBaseUrl}/${path}/*`, [apiScope]);
+  // El wildcard es necesario porque desde v5 el match es anclado y de string completo
+  // (no por prefijo): sin él, `/listings` no cubriría `/listings/{publicationId}`.
+  // Los scopes se acotan por método para que las mutaciones lleven el Bearer token y
+  // el GET siga siendo público: si no, al fallar acquireTokenSilent MSAL dispara un
+  // login interactivo y saca al visitante anónimo del catálogo.
+  protectedResourceMap.set(`${environment.bffBaseUrl}/listings*`, [
+    { httpMethod: 'POST', scopes: [bffScope] },
+    { httpMethod: 'DELETE', scopes: [bffScope] },
+    { httpMethod: 'GET', scopes: null },
+  ]);
+
+  // Compras, bandeja del taller e informes PDF: siempre con identidad, en todos los métodos.
+  for (const path of ['orders', 'inspections', 'reports', 'sales']) {
+    protectedResourceMap.set(`${environment.bffBaseUrl}/${path}*`, [bffScope]);
   }
 
   return {

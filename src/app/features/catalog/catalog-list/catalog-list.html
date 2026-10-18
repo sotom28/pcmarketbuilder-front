@@ -77,7 +77,10 @@
     @if (loading()) {
       <p>Cargando publicaciones...</p>
     } @else if (error()) {
-      <p class="error">{{ error() }}</p>
+      <p class="error">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        {{ error() }}
+      </p>
     } @else {
       <div class="grid">
         @for (listing of page().content; track listing.publicationId) {
@@ -99,6 +102,10 @@
               @if (cart.has(listing.publicationId)) {
                 <button type="button" class="btn btn-secondary in-cart" disabled>
                   <i class="fa-solid fa-check"></i> En el carrito
+                </button>
+              } @else if (isOwnListing(listing)) {
+                <button type="button" class="btn btn-secondary in-cart" disabled>
+                  <i class="fa-solid fa-user-shield"></i> Tu publicación
                 </button>
               } @else {
                 <button type="button" class="btn btn-primary" (click)="addToCart(listing, $event)">

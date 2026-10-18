@@ -7,6 +7,8 @@
   <nav class="links">
     <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Catálogo</a>
     @if (auth.isAuthenticated) {
+      <a routerLink="/orders" routerLinkActive="active">Mis compras</a>
+      <a routerLink="/sales" routerLinkActive="active">Mis ventas</a>
       <a routerLink="/profile" routerLinkActive="active">Mi perfil</a>
       <a routerLink="/orders" routerLinkActive="active">Mis pedidos</a>
     }
@@ -17,6 +19,9 @@
       <a routerLink="/admin/publications" routerLinkActive="active" class="admin-link">
         <i class="fa-solid fa-shield-halved"></i> Admin
       </a>
+      <a routerLink="/admin/inspections" routerLinkActive="active" class="admin-link">
+        <i class="fa-solid fa-clipboard-check"></i> Inspecciones
+      </a>
     }
   </nav>
 
@@ -24,6 +29,16 @@
     <a class="btn btn-outline" routerLink="/sell/new" routerLinkActive="active">
       <i class="fa-solid fa-plus"></i> Publicar
     </a>
+
+    <button
+      type="button"
+      class="theme-toggle"
+      (click)="theme.toggle()"
+      [attr.aria-label]="theme.theme() === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'"
+      [title]="theme.theme() === 'dark' ? 'Modo claro' : 'Modo oscuro'"
+    >
+      <i class="fa-solid" [class.fa-moon]="theme.theme() === 'light'" [class.fa-sun]="theme.theme() === 'dark'"></i>
+    </button>
 
     <a class="cart-button" routerLink="/cart" routerLinkActive="active" aria-label="Carrito">
       <i class="fa-solid fa-cart-shopping"></i>
@@ -34,10 +49,12 @@
 
     @if (auth.isAuthenticated) {
       <span class="user"><i class="fa-solid fa-circle-user"></i> {{ auth.displayName }}</span>
-      <button type="button" class="btn btn-primary" (click)="logout()">Cerrar sesión</button>
+      <button type="button" class="btn btn-primary" [disabled]="auth.redirecting()" (click)="logout()">Cerrar sesión</button>
     } @else {
-      <button type="button" class="btn btn-outline" (click)="register()">Registrarse</button>
-      <button type="button" class="btn btn-primary" (click)="login()">Iniciar sesión</button>
+      <a class="btn btn-outline" routerLink="/register">
+        <i class="fa-solid fa-user-plus"></i> Registrarse
+      </a>
+      <button type="button" class="btn btn-primary" [disabled]="auth.redirecting()" (click)="login()">Iniciar sesión</button>
     }
   </div>
 </header>

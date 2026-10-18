@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CatalogApiService } from '../../../core/services/catalog-api.service';
 import { CartService } from '../../../core/services/cart.service';
+import { AuthService } from '../../../core/auth/auth.service';
 import { Category, Grade, ListingCard, ListingSearchParams, SpringPage } from '../../../core/models/catalog.models';
 import { gradeLabel } from '../../../core/utils/labels';
 import { environment } from '../../../../environments/environment';
@@ -42,7 +43,13 @@ export class CatalogList implements OnInit {
   constructor(
     private readonly catalogApi: CatalogApiService,
     readonly cart: CartService,
+    readonly auth: AuthService,
   ) {}
+
+  /** True si el listing pertenece al usuario autenticado (mismo azure_oid). */
+  isOwnListing(listing: ListingCard): boolean {
+    return !!listing.sellerId && listing.sellerId === this.auth.claims?.oid;
+  }
 
   ngOnInit(): void {
     this.catalogApi.getCategories().subscribe({ next: (categories) => this.categories.set(categories) });
@@ -58,7 +65,8 @@ export class CatalogList implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set(`No se pudo cargar el catálogo. ¿Está el BFF corriendo en ${environment.bffBaseUrl}?`);
+        // Mensaje genérico: el usuario final no sabe qué es el BFF ni su URL.
+        this.error.set('El servicio no está disponible en este momento. Inténtalo de nuevo más tarde.');
         this.loading.set(false);
       },
     });

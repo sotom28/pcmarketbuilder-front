@@ -13,18 +13,18 @@ import {
 
 import { routes } from './app.routes';
 import { AuthService } from './core/auth/auth.service';
+import { stripLogoutState } from './core/auth/clean-url';
 import { MSALGuardConfigFactory, MSALInstanceFactory, MSALInterceptorConfigFactory } from './core/auth/msal.factory';
-import { identityHeadersInterceptor } from './core/interceptors/identity-headers.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    // withHashLocation: GitHub Pages no puede reescribir rutas del lado del
-    // servidor, así que /listings/123 pasaría a dar 404 al recargar. Con hash
-    // (/#/listings/123) todo el ruteo queda del lado del cliente sin necesidad
-    // de configurar el servidor.
-    provideRouter(routes, withHashLocation()),
-    provideHttpClient(withInterceptors([identityHeadersInterceptor]), withInterceptorsFromDi()),
+    provideRouter(routes),
+    // La identidad viaja en el Bearer token: el BFF lo valida (JWKS) y deriva
+    // los headers X-User-* que consumen los microservicios. Por eso ya no se
+    // manda identityHeadersInterceptor: sería un puente que el cliente podría
+    // falsear y además ocultaría si el token real está fallando.
+    provideHttpClient(withInterceptorsFromDi()),
     { provide: HTTP_INTERCEPTORS, useClass: MsalInterceptor, multi: true },
     { provide: MSAL_INSTANCE, useFactory: MSALInstanceFactory },
     { provide: MSAL_GUARD_CONFIG, useFactory: MSALGuardConfigFactory },
@@ -33,10 +33,11 @@ export const appConfig: ApplicationConfig = {
     MsalGuard,
     MsalBroadcastService,
     provideAppInitializer(() => {
+      stripLogoutState(); // antes de MSAL: ver clean-url.ts
       const msalService = inject(MsalService);
-      inject(AuthService); // fuerza la creación temprana para no perder el primer evento de login
+      const auth = inject(AuthService); // fuerza la creación temprana para no perder el primer evento de login
       return msalService.instance.initialize().then(() => {
-        msalService.handleRedirectObservable().subscribe();
+        msalService.handleRedirectObservable().subscribe({ error: (err) => auth.reportRedirectError(err) });
       });
     }),
   ],

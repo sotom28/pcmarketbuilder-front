@@ -3,7 +3,10 @@
 @if (loading()) {
   <p>Cargando...</p>
 } @else if (error()) {
-  <p class="error">{{ error() }}</p>
+  <p class="error">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    {{ error() }}
+  </p>
 } @else if (listing(); as item) {
   <div class="detail-page">
     <div class="product-main">
@@ -102,10 +105,20 @@
         </div>
 
         <div class="action-buttons">
-          @if (cart.has(item.publicationId)) {
+          @if (!isAvailable()) {
+            <button type="button" class="btn btn-secondary" disabled>
+              <i class="fa-solid fa-ban"></i> No disponible
+            </button>
+            <p class="own-listing-note">Esta pieza ya está {{ statusLabel(item.status).toLowerCase() }} y no se puede comprar.</p>
+          } @else if (cart.has(item.publicationId)) {
             <button type="button" class="btn btn-secondary" disabled>
               <i class="fa-solid fa-check"></i> En el carrito
             </button>
+          } @else if (isOwnListing()) {
+            <button type="button" class="btn btn-secondary" disabled>
+              <i class="fa-solid fa-user-shield"></i> Esta es tu publicación
+            </button>
+            <p class="own-listing-note">No puedes comprar un componente que tú mismo vendes.</p>
           } @else {
             <button type="button" class="btn btn-primary" (click)="addToCart()">
               <i class="fa-solid fa-bag-shopping"></i> Agregar al carrito
