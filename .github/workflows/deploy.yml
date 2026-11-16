@@ -2,7 +2,8 @@ name: Build and deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    # TEMPORAL: aws2 se publica para probar Cognito en Pages. Quitarlo al mezclar en main.
+    branches: [main, aws2]
   workflow_dispatch:
 
 # Permisos para GitHub Pages (deploy desde Actions).
