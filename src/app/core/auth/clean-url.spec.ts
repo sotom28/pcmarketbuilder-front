@@ -11,6 +11,12 @@ describe('stripLogoutState', () => {
     expect(window.location.hash).toBe('#frag');
   });
 
+  it('no toca la respuesta de login de Cognito (?code=…&state=…): sin ese state el login no se completa', () => {
+    window.history.replaceState(null, '', '/?code=abc&state=xyz');
+    stripLogoutState();
+    expect(window.location.search).toBe('?code=abc&state=xyz');
+  });
+
   it('no toca la URL si no hay state en la query (ni el state del hash de una respuesta de login)', () => {
     window.history.replaceState(null, '', '/#code=abc&state=xyz');
     stripLogoutState();

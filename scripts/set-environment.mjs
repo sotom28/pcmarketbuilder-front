@@ -3,7 +3,8 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const read = (name, fallback) => process.env[name] ?? fallback;
+// Un secreto de GitHub sin definir llega como cadena vacía: debe usar el valor por defecto, no pisarlo.
+const read = (name, fallback) => process.env[name] || fallback;
 
 const environment = {
   production: true,
